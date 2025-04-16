@@ -3,20 +3,16 @@
 
 Server side 
 ``` bash
-//New terminal 
+#New terminal 
 cd .\server\
-
 npm i 
-
 node index.js
 ```
 
 Client side 
 ``` bash
-//New terminal 
+#New terminal 
 cd .\client\
-
 npm i 
-
 npm run dev
 ```
