@@ -27,12 +27,26 @@ app.get("/api/students", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Default səhifə 1
     const limit = parseInt(req.query.limit) || 25; // Default limit 25
+    const search = req.query.search || ""; // Axtarış parametri
     const skip = (page - 1) * limit;
 
-    // Filter parametrləri (sonradan frontend-dən gələcək)
+    console.log("Səhifə:", page, "Limit:", limit, "Axtarış:", search);
+    // Filter parametrləri
     let filter = {};
+
+    // Qrup nömrəsi filtri
     if (req.query.groupNumber) {
       filter.groupNumber = req.query.groupNumber;
+    }
+
+    // Axtarış parametri
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, "i"); // case-insensitive regex
+      filter.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { groupNumber: searchRegex },
+      ];
     }
 
     // Ümumi sayı almaq üçün

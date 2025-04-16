@@ -5,7 +5,8 @@ import StudentTable from "../src/components/student-table";
 import FilterDropdown from "../src/components/filter-dropdown";
 import NewStudentButton from "../src/components/new-student-button";
 import StudentForm from "../src/components/student-form";
-import Pagination from "../src/components/pagination"; // Yeni komponent əlavə ediləcək
+import Pagination from "../src/components/pagination";
+import SearchInput from "../src/components/SearchInput"; // Yeni komponent import edilir
 import axios from "axios";
 import { Student } from "./types/Student";
 
@@ -20,6 +21,7 @@ export default function App() {
     undefined
   );
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>(""); // Axtarış termini üçün state
 
   // Pagination state'lərini əlavə edirik
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,7 +31,7 @@ export default function App() {
 
   useEffect(() => {
     fetchStudents();
-  }, [currentPage, filter]); // filter və ya səhifə dəyişdikdə yenidən sorğu göndəririk
+  }, [currentPage, filter, searchTerm]); // searchTerm dəyişəndə də yenidən sorğu göndəririk
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -40,6 +42,9 @@ export default function App() {
       let url = `${API_URL}?page=${currentPage}&limit=${pageSize}`;
       if (filter) {
         url += `&groupNumber=${filter}`;
+      }
+      if (searchTerm) {
+        url += `&search=${encodeURIComponent(searchTerm)}`;
       }
 
       const response = await axios.get(url);
@@ -61,8 +66,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await axios.post(API_URL, studentData);
-      console.log("Tələbə yaradıldı:", response.data);
+      await axios.post(API_URL, studentData);
       // Yeni tələbə əlavə edildikdən sonra ilk səhifəyə qayıdırıq
       setCurrentPage(1);
       await fetchStudents();
@@ -79,8 +83,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await axios.put(`${API_URL}/${id}`, studentData);
-      console.log("Tələbə yeniləndi:", response.data);
+      await axios.put(`${API_URL}/${id}`, studentData);
       await fetchStudents(); // Yeni məlumatları gətir
     } catch (err) {
       console.error("Tələbə yeniləmə xətası:", err);
@@ -95,8 +98,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await axios.delete(`${API_URL}/${id}`);
-      console.log("Tələbə silindi:", response.data);
+      await axios.delete(`${API_URL}/${id}`);
       // Son səhifədə bir nəfər varsa və silinibsə, əvvəlki səhifəyə keçirik
       if (students.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
@@ -128,7 +130,6 @@ export default function App() {
       )
     ) {
       if (student._id) {
-        console.log("Silinəcək tələbənin ID-si:", student._id);
         deleteStudent(student._id.toString());
       } else {
         setError("Silinəcək tələbənin ID-si yoxdur");
@@ -143,6 +144,12 @@ export default function App() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Axtarış funksiyası
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Axtarış edəndə ilk səhifəyə qayıdırıq
   };
 
   // Bütün qrupları gətirmək üçün ayrı API istəyi
@@ -194,6 +201,11 @@ export default function App() {
           />
         </div>
 
+        {/* Axtarış komponenti əlavə edirik */}
+        <div className="mb-6">
+          <SearchInput onSearch={handleSearch} />
+        </div>
+
         {error && (
           <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error}</p>
@@ -226,8 +238,6 @@ export default function App() {
               currentPage={currentPage}
               pageSize={pageSize}
             />
-
-            {/* Pagination komponenti */}
           </>
         )}
       </div>

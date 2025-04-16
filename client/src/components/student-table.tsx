@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { Student } from "../types/Student";
 import { ArrowUpDown, Edit, Trash2 } from "lucide-react";
-import { log } from "console";
 
 type SortField = keyof Student;
 type SortDirection = "asc" | "desc";
@@ -33,14 +32,9 @@ export default function StudentTable({
     }
   };
 
-  console.log(students);
-
   const sortedStudents = [...students].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-
-    debugger;
-    console.log(students);
 
     // null və undefined dəyərlər üçün yoxlama
     if (aValue === null || aValue === undefined)
